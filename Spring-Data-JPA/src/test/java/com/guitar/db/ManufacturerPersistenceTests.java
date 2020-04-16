@@ -56,4 +56,10 @@ public class ManufacturerPersistenceTests {
 		List<Manufacturer> mans = manufacturerJpaRepository.findByFoundedDateAfter(new Date());
 		assertEquals(0, mans.size());
 	}
+
+	@Test
+	public void testNativeNamedQueryGetManufacturersThatSellModelsOfType() throws Exception {
+		List<Manufacturer> mans = manufacturerJpaRepository.getAllThatSellAcoustics("Semi-Hollow Body Electric");
+		assertEquals(1, mans.size());
+	}
 }

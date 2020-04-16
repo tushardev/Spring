@@ -14,6 +14,10 @@ import com.guitar.db.repository.ModelJpaRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,4 +106,44 @@ public class ModelPersistenceTests {
 		List<Model> mods = modelJpaRepository.findByModelTypeNameIn(types);
 		assertEquals(5, mods.size());
 	}
+
+	/*** This test is for method using @Query in JPA repository **/
+	@Test
+	public void testQueryGetModelsByPriceRangeAndWoodType() throws Exception {
+		List<Model> mods = modelJpaRepository.queryByPriceRangeAndWoodType(BigDecimal.valueOf(1000L), BigDecimal.valueOf(2000L), "%Maple%");
+		assertEquals(3, mods.size());
+	}
+
+	@Test
+	public void testNativeQueryGetModelsByType() throws Exception {
+		List<Model> mods = modelJpaRepository.nativeQueryModelByName("King");
+		assertEquals(1, mods.size());
+	}
+
+	/*** This test is for method using JPA Named Query **/
+	@Test
+	public void testJPANamedQueryGetModelsByType() throws Exception {
+		List<Model> mods = modelJpaRepository.findModelByType("Electric");
+		assertEquals(4, mods.size());
+	}
+
+	/*** This test is for method using @Query in JPA repository **/
+	@Test
+	public void testQueryGetModelsByPriceRangeAndWoodTypePaginationAndSort() throws Exception {
+		Sort sort = new Sort(Sort.Direction.ASC,"name");
+		Pageable page = new PageRequest(0,2, sort);
+
+		Page<Model> mods = modelJpaRepository.queryByPriceRangeAndWoodTypePaginationAndSort(BigDecimal.valueOf(1000L), BigDecimal.valueOf(2000L),
+				"%Maple%", page);
+		assertEquals(2, mods.getSize());
+
+		System.out.println("Total Elements: " + mods.getTotalElements() + " Total Pages: " + mods.getTotalPages());
+
+		mods.getContent().stream().forEach(s -> System.out.println(s.getName()));
+	}
 }
+
+/*** Run the testQueryGetModelsByPriceRangeAndWoodTypePaginationAndSort() on both ASC and DESC to understand
+ * how paging and sorting work. It works on complete result set.
+ * Observe the test results.
+ */
